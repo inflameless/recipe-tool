@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inflameless Living — Fridge-to-Plate Recipe Matcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sage: #8FA68E;
+            --sage-light: #E8F0E8;
+            --terracotta: #C67C5C;
+            --terracotta-light: #FDF2EC;
+            --cream: #FAF8F5;
+            --charcoal: #2C3E2D;
+            --stone: #6B7B6C;
+            --white: #FFFFFF;
+            --shadow: rgba(44, 62, 45, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--cream);
+            color: var(--charcoal);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 32px;
+        }
+
+        .logo-badge {
+            display: inline-block;
+            background: var(--sage-light);
+            color: var(--sage);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--stone);
+            font-size: 1.05rem;
+            max-width: 500px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+
+        .app-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 4px 24px var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            background: var(--white);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--stone);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            color: var(--terracotta);
+        }
+
+        .tab.active {
+            color: var(--terracotta);
+            border-bottom-color: var(--terracotta);
+        }
+
+        .panel {
+            display: none;
+            padding: 24px;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 44px 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s;
+            background: var(--cream);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--sage);
+            background: var(--white);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--stone);
+        }
+
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--stone);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-icon {
+            font-size: 1.1rem;
+        }
+
+        .ingredients-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ingredient-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 100px;
+            border: 1.5px solid #e0e0e0;
+            background: var(--white);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .ingredient-chip:hover {
+            border-color: var(--sage);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .ingredient-chip.selected {
+            background: var(--sage);
+            color: var(--white);
+            border-color: var(--sage);
+        }
+
+        .ingredient-chip .emoji {
+            font-size: 1rem;
+        }
+
+        .selected-bar {
+            background: var(--sage-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            min-height: 56px;
+        }
+
+        .selected-bar-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--sage);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .selected-chip {
+            background: var(--white);
+            color: var(--charcoal);
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .selected-chip .remove {
+            cursor: pointer;
+            color: var(--terracotta);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .empty-state {
+            color: var(--stone);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--terracotta);
+            color: var(--white);
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            background: #b56a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(198, 124, 92, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--stone);
+            border: 1.5px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--terracotta);
+            color: var(--terracotta);
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            border-radius: 100px;
+            border: 1.5px solid #e0e0e0;
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--terracotta-light);
+            border-color: var(--terracotta);
+            color: var(--terracotta);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .results-count {
+            font-weight: 600;
+            color: var(--charcoal);
+        }
+
+        .results-count span {
+            color: var(--terracotta);
+        }
+
+        .recipe-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            box-shadow: 0 8px 24px var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .recipe-header {
+            padding: 20px 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .recipe-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--charcoal);
+            margin-bottom: 4px;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--stone);
+        }
+
+        .recipe-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .match-badge {
+            background: var(--sage-light);
+            color: var(--sage);
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .match-badge.great {
+            background: var(--terracotta-light);
+            color: var(--terracotta);
+        }
+
+        .recipe-body {
+            padding: 12px 20px 20px;
+        }
+
+        .recipe-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tag.benefit {
+            background: #FFF8E7;
+            color: #B8860B;
+        }
+
+        .tag.meal {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .tag.diet {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .recipe-ingredients-preview {
+            font-size: 0.9rem;
+            color: var(--stone);
+            line-height: 1.5;
+        }
+
+        .recipe-ingredients-preview strong {
+            color: var(--charcoal);
+        }
+
+        .recipe-detail-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .recipe-detail-overlay.active {
+            display: flex;
+        }
+
+        .recipe-detail {
+            background: var(--white);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .detail-header {
+            padding: 28px 28px 0;
+            position: relative;
+        }
+
+        .detail-close {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--cream);
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .detail-close:hover {
+            background: #eee;
+        }
+
+        .detail-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            padding-right: 40px;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .detail-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            color: var(--stone);
+        }
+
+        .detail-section {
+            padding: 0 28px 24px;
+        }
+
+        .detail-section-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: var(--charcoal);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ingredients-list {
+            list-style: none;
+        }
+
+        .ingredients-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .ingredients-list li.have {
+            color: var(--sage);
+        }
+
+        .ingredients-list li.have::before {
+            content: "✓";
+            font-weight: 700;
+            color: var(--sage);
+        }
+
+        .ingredients-list li.need::before {
+            content: "○";
+            color: var(--terracotta);
+        }
+
+        .instructions-list {
+            counter-reset: step;
+            list-style: none;
+        }
+
+        .instructions-list li {
+            position: relative;
+            padding-left: 36px;
+            padding-bottom: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .instructions-list li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--sage-light);
+            color: var(--sage);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .benefit-box {
+            background: var(--terracotta-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+
+        .benefit-box-title {
+            font-weight: 600;
+            color: var(--terracotta);
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .benefit-box p {
+            font-size: 0.9rem;
+            color: var(--charcoal);
+            line-height: 1.5;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--stone);
+        }
+
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 8px;
+            color: var(--charcoal);
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 24px;
+            font-size: 0.8rem;
+            color: var(--stone);
+        }
+
+        .footer-note a {
+            color: var(--terracotta);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            .container { padding: 16px 12px; }
+            .panel { padding: 16px; }
+            .recipe-detail { border-radius: 16px; }
+            .detail-section, .detail-header { padding-left: 20px; padding-right: 20px; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-badge">Inflameless Living</div>
+            <h1>Fridge-to-Plate Recipe Matcher</h1>
+            <p class="subtitle">Tell us what you have. We'll find the perfect anti-inflammatory recipe for you.</p>
+        </header>
+
+        <div class="app-card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('ingredients')">🥬 My Ingredients</button>
+                <button class="tab" onclick="switchTab('recipes')">🍽️ All Recipes</button>
+            </div>
+
+            <div id="ingredients-panel" class="panel active">
+                <div class="selected-bar" id="selectedBar">
+                    <div class="selected-bar-label">Selected Ingredients</div>
+                    <span class="empty-state">Tap ingredients below to add them...</span>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-primary" onclick="findRecipes()">
+                        <span>🔍</span> Find My Recipes
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="ingredientSearch" placeholder="Search ingredients (e.g., salmon, turmeric...)" oninput="filterIngredients()">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div id="ingredientsContainer"></div>
+            </div>
+
+            <div id="recipes-panel" class="panel">
+                <div class="filters">
+                    <div class="filter-chip active" onclick="filterRecipes('all')">All</div>
+                    <div class="filter-chip" onclick="filterRecipes('breakfast')">Breakfast</div>
+                    <div class="filter-chip" onclick="filterRecipes('lunch')">Lunch</div>
+                    <div class="filter-chip" onclick="filterRecipes('dinner')">Dinner</div>
+                    <div class="filter-chip" onclick="filterRecipes('snack')">Snack</div>
+                    <div class="filter-chip" onclick="filterRecipes('quick')">Under 20 min</div>
+                </div>
+                <div id="recipesContainer"></div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Built for the <a href="https://www.skool.com/anti-inflammatory-lifestyle-1274" target="_blank">Inflameless Living</a> community • Anti-inflammatory recipes by Elena Maren
+        </div>
+    </div>
+
+    <div class="recipe-detail-overlay" id="recipeOverlay" onclick="closeRecipe(event)">
+        <div class="recipe-detail" id="recipeDetail" onclick="event.stopPropagation()">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA =====
+        const ingredientsData = {
+            "Proteins": [
+                {name: "Salmon", emoji: "🐟"},
+                {name: "Chicken Breast", emoji: "🍗"},
+                {name: "Turkey", emoji: "🦃"},
+                {name: "Eggs", emoji: "🥚"},
+                {name: "Tofu", emoji: "🧊"},
+                {name: "Tempeh", emoji: "🫘"},
+                {name: "Lentils", emoji: "🫘"},
+                {name: "Chickpeas", emoji: "🫘"},
+                {name: "Black Beans", emoji: "🫘"},
+                {name: "Shrimp", emoji: "🦐"},
+                {name: "Sardines", emoji: "🐟"},
+                {name: "Mackerel", emoji: "🐟"},
+                {name: "Grass-fed Beef", emoji: "🥩"}
+            ],
+            "Vegetables": [
+                {name: "Spinach", emoji: "🍃"},
+                {name: "Kale", emoji: "🥬"},
+                {name: "Broccoli", emoji: "🥦"},
+                {name: "Cauliflower", emoji: "🥦"},
+                {name: "Brussels Sprouts", emoji: "🥬"},
+                {name: "Sweet Potato", emoji: "🍠"},
+                {name: "Zucchini", emoji: "🥒"},
+                {name: "Bell Pepper", emoji: "🫑"},
+                {name: "Tomato", emoji: "🍅"},
+                {name: "Cucumber", emoji: "🥒"},
+                {name: "Carrot", emoji: "🥕"},
+                {name: "Onion", emoji: "🧅"},
+                {name: "Garlic", emoji: "🧄"},
+                {name: "Ginger", emoji: "🫚"},
+                {name: "Mushrooms", emoji: "🍄"},
+                {name: "Asparagus", emoji: "🌿"},
+                {name: "Arugula", emoji: "🍃"},
+                {name: "Cabbage", emoji: "🥬"},
+                {name: "Beets", emoji: "🫒"},
+                {name: "Celery", emoji: "🌿"}
+            ],
+            "Fruits": [
+                {name: "Blueberries", emoji: "🫐"},
+                {name: "Strawberries", emoji: "🍓"},
+                {name: "Lemon", emoji: "🍋"},
+                {name: "Lime", emoji: "🍈"},
+                {name: "Avocado", emoji: "🥑"},
+                {name: "Apple", emoji: "🍎"},
+                {name: "Pomegranate", emoji: "🍎"},
+                {name: "Pineapple", emoji: "🍍"},
+                {name: "Orange", emoji: "🍊"},
+                {name: "Cherries", emoji: "🍒"},
+                {name: "Raspberries", emoji: "🫐"},
+                {name: "Banana", emoji: "🍌"}
+            ],
+            "Pantry & Grains": [
+                {name: "Quinoa", emoji: "🌾"},
+                {name: "Brown Rice", emoji: "🍚"},
+                {name: "Oats", emoji: "🥣"},
+                {name: "Almonds", emoji: "🌰"},
+                {name: "Walnuts", emoji: "🌰"},
+                {name: "Chia Seeds", emoji: "🌱"},
+                {name: "Flax Seeds", emoji: "🌱"},
+                {name: "Hemp Seeds", emoji: "🌱"},
+                {name: "Olive Oil", emoji: "🫒"},
+                {name: "Coconut Oil", emoji: "🥥"},
+                {name: "Tahini", emoji: "🥣"},
+                {name: "Honey", emoji: "🍯"},
+                {name: "Maple Syrup", emoji: "🍁"},
+                {name: "Chickpea Flour", emoji: "🫓"},
+                {name: "Almond Flour", emoji: "🌰"},
+                {name: "Coconut Milk", emoji: "🥥"}
+            ],
+            "Herbs & Spices": [
+                {name: "Turmeric", emoji: "🟡"},
+                {name: "Cinnamon", emoji: "🟤"},
+                {name: "Cumin", emoji: "🟤"},
+                {name: "Coriander", emoji: "🌿"},
+                {name: "Basil", emoji: "🌿"},
+                {name: "Cilantro", emoji: "🌿"},
+                {name: "Parsley", emoji: "🌿"},
+                {name: "Mint", emoji: "🌿"},
+                {name: "Rosemary", emoji: "🌿"},
+                {name: "Thyme", emoji: "🌿"},
+                {name: "Black Pepper", emoji: "⚫"},
+                {name: "Cayenne", emoji: "🌶️"},
+                {name: "Paprika", emoji: "🌶️"}
+            ],
+            "Fermented & Dairy": [
+                {name: "Greek Yogurt", emoji: "🥛"},
+                {name: "Kefir", emoji: "🥛"},
+                {name: "Sauerkraut", emoji: "🥬"},
+                {name: "Kimchi", emoji: "🥬"},
+                {name: "Miso", emoji: "🍲"}
+            ]
+        };
+
+        const recipes = [
+            {
+                id: 1,
+                title: "Golden Turmeric Salmon Bowl",
+                meal: "dinner",
+                time: 25,
+                tags: ["High Omega-3", "Anti-Inflammatory", "Gluten-Free"],
+                ingredients: ["Salmon", "Quinoa", "Spinach", "Turmeric", "Olive Oil", "Lemon", "Garlic", "Black Pepper"],
+                instructions: [
+                    "Cook quinoa according to package instructions (about 15 min).",
+                    "Pat salmon dry and season with turmeric, garlic, salt, and black pepper.",
+                    "Heat olive oil in a pan over medium-high heat. Sear salmon 4-5 min per side until golden.",
+                    "Wilt spinach in the same pan with a splash of lemon juice.",
+                    "Assemble bowl: quinoa base, spinach, flaked salmon on top. Drizzle with lemon and olive oil."
+                ],
+                benefit: "Salmon provides potent omega-3 fatty acids (EPA/DHA) that actively reduce inflammatory markers. Turmeric's curcumin, enhanced by black pepper's piperine, blocks NF-κB inflammation pathways."
+            },
+            {
+                id: 2,
+                title: "Anti-Inflammatory Green Smoothie",
+                meal: "breakfast",
+                time: 5,
+                tags: ["Quick", "Gut-Healing", "Antioxidant-Rich"],
+                ingredients: ["Spinach", "Blueberries", "Ginger", "Chia Seeds", "Avocado", "Lemon", "Greek Yogurt"],
+                instructions: [
+                    "Add 1 cup spinach, ½ cup blueberries, ½ inch peeled ginger, and ¼ avocado to blender.",
+                    "Add ½ cup Greek yogurt, 1 tbsp chia seeds, and juice of ½ lemon.",
+                    "Add ½ cup water or ice and blend until smooth (about 60 seconds).",
+                    "Pour and enjoy immediately for maximum nutrient density."
+                ],
+                benefit: "Ginger inhibits COX-2 inflammatory enzymes. Blueberries deliver anthocyanins that reduce oxidative stress. Chia seeds provide ALA omega-3s and fiber for microbiome support."
+            },
+            {
+                id: 3,
+                title: "Mediterranean Chickpea Salad",
+                meal: "lunch",
+                time: 15,
+                tags: ["Plant-Based", "Fiber-Rich", "No-Cook"],
+                ingredients: ["Chickpeas", "Cucumber", "Tomato", "Red Onion", "Parsley", "Lemon", "Olive Oil", "Cumin"],
+                instructions: [
+                    "Rinse and drain 1 can of chickpeas (or 1.5 cups cooked).",
+                    "Dice cucumber, tomato, and red onion into small cubes.",
+                    "Chop a large handful of fresh parsley.",
+                    "Toss everything in a bowl with 2 tbsp olive oil, juice of 1 lemon, ½ tsp cumin, salt, and pepper.",
+                    "Let sit for 10 minutes for flavors to meld. Serve chilled or at room temp."
+                ],
+                benefit: "Chickpeas are rich in resistant starch that feeds beneficial gut bacteria. Olive oil's oleocanthal has ibuprofen-like anti-inflammatory effects. The high fiber content supports butyrate production."
+            },
+            {
+                id: 4,
+                title: "Ginger-Turmeric Chicken Stir-Fry",
+                meal: "dinner",
+                time: 20,
+                tags: ["High Protein", "Low-Carb", "Gut-Friendly"],
+                ingredients: ["Chicken Breast", "Broccoli", "Bell Pepper", "Ginger", "Garlic", "Turmeric", "Coconut Oil", "Tamari"],
+                instructions: [
+                    "Slice chicken into thin strips. Toss with ½ tsp turmeric and black pepper.",
+                    "Heat coconut oil in a wok or large pan over high heat.",
+                    "Stir-fry chicken for 5-6 minutes until cooked through. Remove and set aside.",
+                    "Add broccoli and bell pepper to the pan. Stir-fry 4-5 minutes until crisp-tender.",
+                    "Add minced ginger and garlic, cook 1 minute. Return chicken to pan. Add 1 tbsp tamari, toss, and serve."
+                ],
+                benefit: "Ginger and turmeric form a powerful anti-inflammatory duo. Broccoli contains sulforaphane, which activates the Nrf2 pathway — your body's own antioxidant defense system."
+            },
+            {
+                id: 5,
+                title: "Overnight Oats with Berries & Walnuts",
+                meal: "breakfast",
+                time: 5,
+                tags: ["Prep Ahead", "Heart-Healthy", "Blood Sugar Friendly"],
+                ingredients: ["Oats", "Chia Seeds", "Walnuts", "Blueberries", "Cinnamon", "Greek Yogurt", "Almond Milk"],
+                instructions: [
+                    "In a jar, combine ½ cup oats, 1 tbsp chia seeds, ½ tsp cinnamon.",
+                    "Add ½ cup Greek yogurt and ½ cup almond milk. Stir well.",
+                    "Top with ¼ cup blueberries and 2 tbsp chopped walnuts.",
+                    "Refrigerate overnight (or at least 4 hours). Eat cold or warmed slightly."
+                ],
+                benefit: "Walnuts provide the highest ALA omega-3 content of any nut. Cinnamon improves insulin sensitivity. The resistant starch in oats feeds Akkermansia muciniphila, a keystone anti-inflammatory gut bacterium."
+            },
+            {
+                id: 6,
+                title: "Roasted Sweet Potato & Kale Salad",
+                meal: "lunch",
+                time: 35,
+                tags: ["Vitamin A Rich", "Fiber-Rich", "Vegan"],
+                ingredients: ["Sweet Potato", "Kale", "Walnuts", "Pomegranate", "Olive Oil", "Lemon", "Garlic"],
+                instructions: [
+                    "Preheat oven to 400°F (200°C). Cube sweet potato, toss with olive oil, salt, and pepper.",
+                    "Roast on a baking sheet for 25-30 minutes until caramelized and tender.",
+                    "Massage chopped kale with 1 tsp olive oil and a pinch of salt until wilted (about 2 min).",
+                    "Whisk lemon juice, minced garlic, and 2 tbsp olive oil for dressing.",
+                    "Toss kale with roasted sweet potato, walnuts, and pomegranate seeds. Drizzle dressing over top."
+                ],
+                benefit: "Sweet potatoes are rich in beta-carotene, which converts to vitamin A and modulates immune response. Kale provides glucosinolates that support liver detoxification pathways. Pomegranate contains punicalagins with potent anti-inflammatory activity."
+            },
+            {
+                id: 7,
+                title: "Zucchini Noodles with Avocado Pesto",
+                meal: "dinner",
+                time: 15,
+                tags: ["Low-Carb", "Raw Friendly", "Healthy Fats"],
+                ingredients: ["Zucchini", "Avocado", "Basil", "Garlic", "Lemon", "Olive Oil", "Pine Nuts", "Cherry Tomatoes"],
+                instructions: [
+                    "Spiralize 2-3 zucchini into noodles (or use a vegetable peeler for ribbons).",
+                    "Blend 1 avocado, 1 cup basil, 1 garlic clove, juice of 1 lemon, 2 tbsp olive oil, and 2 tbsp pine nuts until smooth.",
+                    "Halve cherry tomatoes.",
+                    "Toss zucchini noodles with pesto sauce. Top with tomatoes and extra pine nuts. Serve immediately."
+                ],
+                benefit: "Avocado provides monounsaturated fats that reduce CRP (C-reactive protein) levels. Basil contains eugenol, which blocks inflammatory cytokines. Replacing pasta with zucchini dramatically lowers the meal's glycemic load."
+            },
+            {
+                id: 8,
+                title: "Lentil & Turmeric Soup",
+                meal: "dinner",
+                time: 40,
+                tags: ["Plant Protein", "Gut-Healing", "Budget Friendly"],
+                ingredients: ["Lentils", "Carrot", "Celery", "Onion", "Garlic", "Turmeric", "Cumin", "Vegetable Broth", "Spinach", "Lemon"],
+                instructions: [
+                    "Sauté diced onion, carrot, and celery in olive oil for 5 minutes until soft.",
+                    "Add minced garlic, 1 tsp turmeric, and ½ tsp cumin. Cook 1 minute until fragrant.",
+                    "Add 1 cup rinsed lentils and 4 cups vegetable broth. Bring to a boil, then simmer 25-30 minutes.",
+                    "Stir in a few handfuls of spinach until wilted (2 minutes).",
+                    "Finish with juice of ½ lemon and adjust salt. Serve warm."
+                ],
+                benefit: "Lentils are one of the best sources of polyphenol-rich plant protein. Their prebiotic fiber increases beneficial short-chain fatty acid production. Turmeric and cumin provide complementary anti-inflammatory compounds."
+            },
+            {
+                id: 9,
+                title: "Berry Antioxidant Parfait",
+                meal: "snack",
+                time: 5,
+                tags: ["Quick", "Probiotic", "Antioxidant-Rich"],
+                ingredients: ["Greek Yogurt", "Blueberries", "Raspberries", "Walnuts", "Chia Seeds", "Honey", "Cinnamon"],
+                instructions: [
+                    "Layer 1 cup Greek yogurt in a bowl or glass.",
+                    "Top with ½ cup mixed berries, 1 tbsp chia seeds, and 2 tbsp chopped walnuts.",
+                    "Drizzle with 1 tsp honey and sprinkle with cinnamon.",
+                    "Enjoy immediately as a gut-healing, antioxidant-rich snack."
+                ],
+                benefit: "Greek yogurt delivers live probiotics that strengthen gut barrier function (reducing leaky-gut driven inflammation). Berries provide ellagic acid and quercetin that calm mast cell activation."
+            },
+            {
+                id: 10,
+                title: "Sardine & Avocado Toast",
+                meal: "lunch",
+                time: 10,
+                tags: ["High Omega-3", "Calcium Rich", "Satiating"],
+                ingredients: ["Sardines", "Avocado", "Sourdough Bread", "Lemon", "Red Pepper Flakes", "Olive Oil", "Arugula"],
+                instructions: [
+                    "Toast 2 slices of sourdough bread until golden and crisp.",
+                    "Mash ½ avocado with a squeeze of lemon, salt, and pepper.",
+                    "Spread avocado on toast. Top with sardines (drained), broken into pieces.",
+                    "Drizzle with olive oil, sprinkle with red pepper flakes, and top with fresh arugula."
+                ],
+                benefit: "Sardines are one of the most concentrated whole-food sources of EPA and DHA omega-3s, plus vitamin D and calcium. The combination with avocado's monounsaturated fats creates a powerful anti-inflammatory lipid profile."
+            },
+            {
+                id: 11,
+                title: "Cauliflower & Chickpea Curry",
+                meal: "dinner",
+                time: 30,
+                tags: ["Plant-Based", "High Fiber", "Batch Cook Friendly"],
+                ingredients: ["Cauliflower", "Chickpeas", "Coconut Milk", "Turmeric", "Cumin", "Ginger", "Garlic", "Onion", "Tomato", "Spinach"],
+                instructions: [
+                    "Sauté diced onion in coconut oil until translucent (5 min).",
+                    "Add minced ginger, garlic, 1 tsp turmeric, and 1 tsp cumin. Cook 1 minute.",
+                    "Add chopped cauliflower and diced tomato. Stir to coat in spices.",
+                    "Pour in 1 can coconut milk and 1 can chickpeas (drained). Simmer 15-20 min until cauliflower is tender.",
+                    "Stir in spinach at the end. Serve over brown rice or cauliflower rice."
+                ],
+                benefit: "Cauliflower contains sulforaphane that reduces inflammatory cytokine production. Coconut milk provides MCTs that support ketone production (a preferred anti-inflammatory brain fuel). The spice blend actively modulates NF-κB signaling."
+            },
+            {
+                id: 12,
+                title: "Tahini-Ginger Dressing with Roasted Vegetables",
+                meal: "lunch",
+                time: 30,
+                tags: ["Mediterranean", "Calcium Rich", "Hormone Balancing"],
+                ingredients: ["Tahini", "Ginger", "Lemon", "Garlic", "Olive Oil", "Broccoli", "Brussels Sprouts", "Sweet Potato", "Pomegranate"],
+                instructions: [
+                    "Preheat oven to 400°F. Chop broccoli, Brussels sprouts, and sweet potato. Toss with olive oil, salt, and pepper.",
+                    "Roast vegetables for 25-30 minutes until caramelized.",
+                    "Whisk 3 tbsp tahini, 1 tbsp grated ginger, juice of 1 lemon, 1 minced garlic clove, and 2-3 tbsp warm water until smooth.",
+                    "Drizzle tahini-ginger dressing over warm roasted vegetables. Top with pomegranate seeds."
+                ],
+                benefit: "Tahini (sesame seed paste) is rich in lignans that modulate estrogen metabolism and reduce inflammation. Ginger's gingerol compounds inhibit multiple inflammatory pathways simultaneously."
+            },
+            {
+                id: 13,
+                title: "Shakshuka with Spinach & Turmeric",
+                meal: "breakfast",
+                time: 25,
+                tags: ["High Protein", "One-Pan", "Middle Eastern"],
+                ingredients: ["Eggs", "Tomato", "Bell Pepper", "Onion", "Garlic", "Spinach", "Turmeric", "Cumin", "Olive Oil", "Cilantro"],
+                instructions: [
+                    "Sauté diced onion and bell pepper in olive oil until soft (5-7 min).",
+                    "Add minced garlic, ½ tsp turmeric, and ½ tsp cumin. Cook 1 minute.",
+                    "Add diced tomatoes and simmer 10 minutes until sauce thickens. Season with salt and pepper.",
+                    "Make wells in the sauce and crack 4 eggs into them. Cover and cook 5-7 minutes until whites are set.",
+                    "Top with fresh cilantro and serve with a side of greens."
+                ],
+                benefit: "Eggs provide choline, which supports methylation — a critical process for regulating inflammation gene expression. The lycopene in cooked tomatoes becomes more bioavailable and reduces IL-6 inflammatory markers."
+            },
+            {
+                id: 14,
+                title: "Miso-Ginger Glazed Salmon",
+                meal: "dinner",
+                time: 20,
+                tags: ["High Omega-3", "Umami Rich", "Gut-Healing"],
+                ingredients: ["Salmon", "Miso", "Ginger", "Garlic", "Lemon", "Sesame Oil", "Broccoli", "Brown Rice"],
+                instructions: [
+                    "Mix 2 tbsp white miso, 1 tbsp grated ginger, 1 minced garlic clove, 1 tsp sesame oil, and juice of ½ lemon.",
+                    "Spread mixture over salmon fillets and let marinate 10 minutes (or overnight).",
+                    "Broil salmon 6-8 minutes until caramelized on top and cooked through.",
+                    "Steam broccoli and serve with brown rice. Drizzle any extra glaze on top."
+                ],
+                benefit: "Miso is a fermented soybean paste containing probiotics and bioactive peptides that reduce inflammation. Combined with salmon's omega-3s and ginger, this creates a triple-threat anti-inflammatory meal."
+            },
+            {
+                id: 15,
+                title: "Arugula & Beet Salad with Walnuts",
+                meal: "lunch",
+                time: 15,
+                tags: ["Nitrate Rich", "Liver Support", "No-Cook"],
+                ingredients: ["Arugula", "Beets", "Walnuts", "Goat Cheese", "Olive Oil", "Balsamic Vinegar", "Orange"],
+                instructions: [
+                    "Use pre-cooked beets (or roast raw beets ahead of time). Slice into wedges.",
+                    "Arrange fresh arugula on a plate. Top with beet wedges, crumbled goat cheese, and walnuts.",
+                    "Whisk 2 tbsp olive oil, 1 tbsp balsamic vinegar, and juice of ½ orange.",
+                    "Drizzle dressing over salad and serve immediately."
+                ],
+                benefit: "Beets are rich in dietary nitrates that improve blood flow and reduce blood pressure-related inflammation. Arugula contains glucosinolates that support phase II liver detoxification — critical for clearing inflammatory toxins."
+            }
+        ];
+
+        // ===== STATE =====
+        let selectedIngredients = new Set();
+        let currentFilter = 'all';
+
+        // ===== INIT =====
+        function init() {
+            renderIngredients();
+            renderRecipes(recipes);
+        }
+
+        // ===== RENDER INGREDIENTS =====
+        function renderIngredients(filter = '') {
+            const container = document.getElementById('ingredientsContainer');
+            container.innerHTML = '';
+
+            for (const [category, items] of Object.entries(ingredientsData)) {
+                const filteredItems = items.filter(i => i.name.toLowerCase().includes(filter.toLowerCase()));
+                if (filteredItems.length === 0) continue;
+
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category';
+
+                const icons = {
+                    'Proteins': '🍗', 'Vegetables': '🥬', 'Fruits': '🍎',
+                    'Pantry & Grains': '🌾', 'Herbs & Spices': '🌿', 'Fermented & Dairy': '🥛'
+                };
+
+                catDiv.innerHTML = `
+                    <div class="category-title">
+                        <span class="category-icon">${icons[category] || '📦'}</span>
+                        ${category}
+                    </div>
+                    <div class="ingredients-grid" id="cat-${category.replace(/\s+/g, '-').replace(/&/g, 'and')}"></div>
+                `;
+
+                const grid = catDiv.querySelector('.ingredients-grid');
+                filteredItems.forEach(item => {
+                    const chip = document.createElement('div');
+                    chip.className = `ingredient-chip ${selectedIngredients.has(item.name) ? 'selected' : ''}`;
+                    chip.innerHTML = `<span class="emoji">${item.emoji}</span> ${item.name}`;
+                    chip.onclick = () => toggleIngredient(item.name, chip);
+                    grid.appendChild(chip);
+                });
+
+                container.appendChild(catDiv);
+            }
+        }
+
+        function toggleIngredient(name, chipEl) {
+            if (selectedIngredients.has(name)) {
+                selectedIngredients.delete(name);
+                chipEl.classList.remove('selected');
+            } else {
+                selectedIngredients.add(name);
+                chipEl.classList.add('selected');
+            }
+            updateSelectedBar();
+        }
+
+        function updateSelectedBar() {
+            const bar = document.getElementById('selectedBar');
+            if (selectedIngredients.size === 0) {
+                bar.innerHTML = `
+                    <div class="selected-bar-label">Selected Ingredients</div>
+                    <span class="empty-state">Tap ingredients below to add them...</span>
+                `;
+                return;
+            }
+
+            let html = '<div class="selected-bar-label">Selected Ingredients</div>';
+            selectedIngredients.forEach(name => {
+                html += `<span class="selected-chip">${name} <span class="remove" onclick="removeIngredient('${name}')">×</span></span>`;
+            });
+            bar.innerHTML = html;
+        }
+
+        function removeIngredient(name) {
+            selectedIngredients.delete(name);
+            updateSelectedBar();
+            renderIngredients(document.getElementById('ingredientSearch').value);
+        }
+
+        function clearAll() {
+            selectedIngredients.clear();
+            updateSelectedBar();
+            renderIngredients(document.getElementById('ingredientSearch').value);
+            renderRecipes(recipes);
+            switchTab('ingredients');
+        }
+
+        function filterIngredients() {
+            const val = document.getElementById('ingredientSearch').value;
+            renderIngredients(val);
+        }
+
+        // ===== RECIPE MATCHING =====
+        function findRecipes() {
+            if (selectedIngredients.size === 0) {
+                alert('Select at least one ingredient first!');
+                return;
+            }
+
+            const scored = recipes.map(r => {
+                const matched = r.ingredients.filter(i => selectedIngredients.has(i));
+                const missing = r.ingredients.filter(i => !selectedIngredients.has(i));
+                const score = matched.length / r.ingredients.length;
+                return {...r, matched, missing, score, matchCount: matched.length};
+            }).filter(r => r.score > 0);
+
+            scored.sort((a, b) => b.score - a.score);
+
+            switchTab('recipes');
+            renderRecipes(scored, true);
+        }
+
+        // ===== RENDER RECIPES =====
+        function renderRecipes(recipeList, isMatch = false) {
+            const container = document.getElementById('recipesContainer');
+            container.innerHTML = '';
+
+            let filtered = recipeList;
+            if (currentFilter === 'quick') {
+                filtered = recipeList.filter(r => r.time <= 20);
+            } else if (currentFilter !== 'all') {
+                filtered = recipeList.filter(r => r.meal === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🥗</div>
+                        <h3>No recipes found</h3>
+                        <p>Try adjusting your filters or selecting different ingredients.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const countDiv = document.createElement('div');
+            countDiv.className = 'results-header';
+            countDiv.innerHTML = `<div class="results-count">Found <span>${filtered.length}</span> recipe${filtered.length !== 1 ? 's' : ''}</div>`;
+            container.appendChild(countDiv);
+
+            filtered.forEach((r, idx) => {
+                const card = document.createElement('div');
+                card.className = 'recipe-card fade-in';
+                card.style.animationDelay = `${idx * 0.05}s`;
+
+                const matchLabel = isMatch ? `<span class="match-badge ${r.score >= 0.6 ? 'great' : ''}">${r.matchCount}/${r.ingredients.length} matched</span>` : '';
+
+                const tagsHtml = r.tags.map(t => `<span class="tag benefit">${t}</span>`).join('');
+                const mealTag = `<span class="tag meal">${r.meal}</span>`;
+
+                const previewIngredients = r.ingredients.slice(0, 4).join(', ') + (r.ingredients.length > 4 ? ` +${r.ingredients.length - 4} more` : '');
+
+                card.innerHTML = `
+                    <div class="recipe-header">
+                        <div>
+                            <div class="recipe-title">${r.title}</div>
+                            <div class="recipe-meta">
+                                <span>⏱️ ${r.time} min</span>
+                                <span>🍽️ ${r.ingredients.length} ingredients</span>
+                            </div>
+                        </div>
+                        ${matchLabel}
+                    </div>
+                    <div class="recipe-body">
+                        <div class="recipe-tags">${mealTag}${tagsHtml}</div>
+                        <div class="recipe-ingredients-preview"><strong>Uses:</strong> ${previewIngredients}</div>
+                    </div>
+                `;
+
+                card.onclick = () => openRecipe(r, isMatch);
+                container.appendChild(card);
+            });
+        }
+
+        function filterRecipes(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // If we're in match mode, re-run the match logic, otherwise show all
+            if (selectedIngredients.size > 0 && document.querySelector('.match-badge')) {
+                findRecipes();
+            } else {
+                renderRecipes(recipes);
+            }
+        }
+
+        // ===== RECIPE DETAIL MODAL =====
+        function openRecipe(r, isMatch) {
+            const overlay = document.getElementById('recipeOverlay');
+            const detail = document.getElementById('recipeDetail');
+
+            let ingredientsHtml = '';
+            if (isMatch && selectedIngredients.size > 0) {
+                ingredientsHtml = r.ingredients.map(ing => {
+                    const have = selectedIngredients.has(ing);
+                    return `<li class="${have ? 'have' : 'need'}">${ing} ${have ? '<span style="margin-left:auto;font-size:0.75rem;color:var(--sage)">✓ have</span>' : '<span style="margin-left:auto;font-size:0.75rem;color:var(--terracotta)">need</span>'}</li>`;
+                }).join('');
+            } else {
+                ingredientsHtml = r.ingredients.map(ing => `<li>${ing}</li>`).join('');
+            }
+
+            const instructionsHtml = r.instructions.map(step => `<li>${step}</li>`).join('');
+
+            detail.innerHTML = `
+                <div class="detail-header">
+                    <button class="detail-close" onclick="closeRecipe()">×</button>
+                    <div class="detail-title">${r.title}</div>
+                    <div class="detail-meta">
+                        <div class="detail-meta-item">⏱️ ${r.time} minutes</div>
+                        <div class="detail-meta-item">🍽️ ${r.meal}</div>
+                        <div class="detail-meta-item">📋 ${r.ingredients.length} ingredients</div>
+                    </div>
+                    <div class="recipe-tags" style="margin-top:10px;margin-bottom:10px;">
+                        ${r.tags.map(t => `<span class="tag benefit">${t}</span>`).join('')}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">🥬 Ingredients</div>
+                    <ul class="ingredients-list">
+                        ${ingredientsHtml}
+                    </ul>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">👩‍🍳 Instructions</div>
+                    <ol class="instructions-list">
+                        ${instructionsHtml}
+                    </ol>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-title">🌿 Why This Works</div>
+                    <div class="benefit-box">
+                        <div class="benefit-box-title">Anti-Inflammatory Benefits</div>
+                        <p>${r.benefit}</p>
+                    </div>
+                </div>
+
+                <div style="height:20px;"></div>
+            `;
+
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeRecipe(e) {
+            if (e && e.target !== document.getElementById('recipeOverlay') && e.target !== e.currentTarget) return;
+            document.getElementById('recipeOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ===== TABS =====
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+            if (tab === 'ingredients') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('ingredients-panel').classList.add('active');
+            } else {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('recipes-panel').classList.add('active');
+            }
+        }
+
+        // ===== INIT =====
+        init();
+    </script>
+</body>
+</html>
